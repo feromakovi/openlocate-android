@@ -22,6 +22,7 @@
 package com.openlocate.android.core;
 
 import android.location.Location;
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
@@ -46,6 +47,7 @@ public final class OpenLocateLocation implements JsonObjectType {
         static final String COURSE = "course";
         static final String SPEED = "speed";
         static final String ALTITUDE = "altitude";
+        static final String VERTICAL_ACCURACY = "vertical_accuracy";
 
         static final String IS_CHARGING = "is_charging";
         static final String DEVICE_MANUFACTURER = "device_manufacturer";
@@ -115,6 +117,7 @@ public final class OpenLocateLocation implements JsonObjectType {
             location.setAltitude(json.getDouble(Keys.ALTITUDE));
             location.setCourse(Float.parseFloat(json.getString(Keys.COURSE)));
             location.setSpeed(Float.parseFloat(json.getString(Keys.SPEED)));
+            location.setVerticalAccuracy(Float.parseFloat(json.getString(Keys.VERTICAL_ACCURACY)));
 
             String deviceManufacturer = "";
             if (json.has(Keys.DEVICE_MANUFACTURER)) {
@@ -194,7 +197,8 @@ public final class OpenLocateLocation implements JsonObjectType {
                     .put(Keys.ALTITUDE, location.getAltitude())
                     .put(Keys.AD_ID, advertisingInfo.getId())
                     .put(Keys.AD_OPT_OUT, advertisingInfo.isLimitAdTrackingEnabled())
-                    .put(Keys.AD_TYPE, ADVERTISING_ID_TYPE);
+                    .put(Keys.AD_TYPE, ADVERTISING_ID_TYPE)
+                    .put(Keys.VERTICAL_ACCURACY, location.getVerticalAccuracy());
 
             if (created != null) {
                 jsonObject.put(Keys.TIMESTAMP_RECEIVED, TimeUnit.MILLISECONDS.toSeconds(getCreated().getTime()));
@@ -253,6 +257,8 @@ public final class OpenLocateLocation implements JsonObjectType {
         private float course;
         private double altitude;
 
+        private float verticalAccuracy;
+
         LocationInfo() {
 
         }
@@ -265,6 +271,10 @@ public final class OpenLocateLocation implements JsonObjectType {
             speed = location.getSpeed();
             course = location.getBearing();
             altitude = location.getAltitude();
+
+            if (Build.VERSION.SDK_INT >= 26) {
+                verticalAccuracy = location.getVerticalAccuracyMeters();
+            }
         }
 
         public double getLatitude() {
@@ -323,6 +333,14 @@ public final class OpenLocateLocation implements JsonObjectType {
             this.altitude = altitude;
         }
 
+        public float getVerticalAccuracy() {
+            return verticalAccuracy;
+        }
+
+        public void setVerticalAccuracy(float verticalAccuracy) {
+            this.verticalAccuracy = verticalAccuracy;
+        }
+
         @Override
         public String toString() {
             return "LocationInfo{" +
@@ -333,6 +351,7 @@ public final class OpenLocateLocation implements JsonObjectType {
                     ", speed=" + speed +
                     ", course=" + course +
                     ", altitude=" + altitude +
+                    ", verticalAccuracy=" + verticalAccuracy +
                     '}';
         }
     }

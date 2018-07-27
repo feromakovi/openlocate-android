@@ -203,7 +203,7 @@ The following fields are collected by the SDK to be sent to a private or public 
 12. `device_manufacturer` - Manufacturer of device
 13. `device_model` - Model of devise
 14. `os` - Operating system installed on Device.
-15. `location_method` - Method of location collected i.e "wifi", "cellular", "fused", "gps"
+15. `location_method` - Method of location collected i.e "gps", "network", "passive"
 16. `location_context` -  Indicates whether the location was collected when the application was foregrounded or backgrounded on the device.
 17. `carrier_name` - Name of the mobile network carrier
 18. `connection_type` - Collects devices's network connection type

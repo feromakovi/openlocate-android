@@ -2,6 +2,15 @@
 
 `OpenLocate-Android` adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.0](https://github.com/OpenLocate/openlocate-ios/tag/1.3.0)
+
+#### Added
+
+- Upgrade to API 26 as compile version. (#90)
+- Ability to force send current data collected. (#90)
+- Data now includes vertical accuracy (altitude accuracy)
+
+
 ## [1.2.0](https://github.com/OpenLocate/openlocate-ios/tag/1.2.0)
 
 #### Added

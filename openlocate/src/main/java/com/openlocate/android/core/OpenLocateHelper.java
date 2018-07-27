@@ -8,11 +8,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.RetryStrategy;
+import com.firebase.jobdispatcher.Trigger;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.PeriodicTask;
-import com.google.android.gms.gcm.Task;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
@@ -24,14 +27,14 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = OpenLocateHelper.class.getSimpleName();
-    private static final String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task";
+    private final static String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task_v2";
 
     private final Context context;
 
     private OpenLocate.Configuration configuration;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private GcmNetworkManager mNetworkManager;
+    private FirebaseJobDispatcher jobDispatcher;
 
     public OpenLocateHelper(Context context, OpenLocate.Configuration configuration) {
         this.context = context;
@@ -42,7 +45,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
                 .addApi(LocationServices.API)
                 .build();
 
-        mNetworkManager = GcmNetworkManager.getInstance(context);
+        jobDispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
     }
 
     public void startTracking() {
@@ -126,7 +129,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
 
     private void scheduleDispatchLocationService() {
         List<OpenLocate.Endpoint> endpoints = configuration.getEndpoints();
-        if (endpoints == null || mNetworkManager == null) {
+        if (endpoints == null || jobDispatcher == null) {
             return;
         }
 
@@ -138,19 +141,21 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
             stopTracking();
         }
 
-        PeriodicTask task = new PeriodicTask.Builder()
-                .setExtras(bundle)
+        long transmissionIntervalInSecs = configuration.getTransmissionInterval();
+
+        Job job = jobDispatcher.newJobBuilder()
                 .setService(DispatchLocationService.class)
-                .setPeriod(configuration.getTransmissionInterval())
-                .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-                .setRequiresCharging(false)
-                .setPersisted(true)
-                .setUpdateCurrent(false)
                 .setTag(LOCATION_DISPATCH_TAG)
+                .setRecurring(true)
+                .setLifetime(Lifetime.FOREVER)
+                .setTrigger(Trigger.executionWindow((int)(transmissionIntervalInSecs * 0.9), (int)(transmissionIntervalInSecs * 1.1)))
+                .setReplaceCurrent(false)
+                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+                .setExtras(bundle)
                 .build();
 
         try {
-            mNetworkManager.schedule(task);
+            jobDispatcher.mustSchedule(job);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Google Play Services is not up to date.");
             stopTracking();
@@ -158,8 +163,8 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private void unscheduleDispatchLocationService() {
-        if (mNetworkManager != null) {
-            mNetworkManager.cancelAllTasks(DispatchLocationService.class);
+        if (jobDispatcher != null) {
+            jobDispatcher.cancel(LOCATION_DISPATCH_TAG);
         }
     }
 

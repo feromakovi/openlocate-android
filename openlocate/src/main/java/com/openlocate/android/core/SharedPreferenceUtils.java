@@ -19,7 +19,6 @@ public class SharedPreferenceUtils {
     private SharedPreferenceUtils(Context context) {
         mContext = context;
         mSharedPreferences = context.getSharedPreferences(Constants.OPENLOCATE, Context.MODE_PRIVATE);
-        mSharedPreferencesEditor = mSharedPreferences.edit();
     }
 
     public static synchronized SharedPreferenceUtils getInstance(Context context) {
@@ -31,11 +30,13 @@ public class SharedPreferenceUtils {
     }
 
     public void setValue(String key, String value) {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         mSharedPreferencesEditor.putString(key, value);
         mSharedPreferencesEditor.commit();
     }
 
     public void setValue(String key, int value) {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         mSharedPreferencesEditor.putInt(key, value);
         mSharedPreferencesEditor.commit();
     }
@@ -45,11 +46,13 @@ public class SharedPreferenceUtils {
     }
 
     public void setValue(String key, long value) {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         mSharedPreferencesEditor.putLong(key, value);
         mSharedPreferencesEditor.commit();
     }
 
     public void setValue(String key, boolean value) {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         mSharedPreferencesEditor.putBoolean(key, value);
         mSharedPreferencesEditor.commit();
     }
@@ -71,6 +74,7 @@ public class SharedPreferenceUtils {
     }
 
     public void removeKey(String key) {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         if (mSharedPreferencesEditor != null) {
             mSharedPreferencesEditor.remove(key);
             mSharedPreferencesEditor.commit();
@@ -78,9 +82,10 @@ public class SharedPreferenceUtils {
     }
 
     public void saveMap(String key, HashMap<String,String> inputMap){
-            JSONObject jsonObject = new JSONObject(inputMap);
-            String jsonString = jsonObject.toString();
-            mSharedPreferencesEditor.putString(key, jsonString);
+        JSONObject jsonObject = new JSONObject(inputMap);
+        String jsonString = jsonObject.toString();
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
+        mSharedPreferencesEditor.putString(key, jsonString);
     }
 
     public HashMap<String,String> loadMap(String mapKey){
@@ -103,6 +108,7 @@ public class SharedPreferenceUtils {
     }
 
     public void clear() {
+        SharedPreferences.Editor mSharedPreferencesEditor = mSharedPreferences.edit();
         mSharedPreferencesEditor.clear().commit();
     }
 }

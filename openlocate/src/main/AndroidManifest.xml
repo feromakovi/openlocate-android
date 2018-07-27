@@ -15,11 +15,10 @@
         <service
             android:name="com.openlocate.android.core.DispatchLocationService"
             android:enabled="true"
-            android:exported="true"
-            android:process=":LocationService"
-            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
+            android:exported="false"
+            android:process=":LocationService">
             <intent-filter>
-                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
             </intent-filter>
         </service>
 

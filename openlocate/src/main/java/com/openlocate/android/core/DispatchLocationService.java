@@ -30,10 +30,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.util.Log;
 
-import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.GcmTaskService;
-import com.google.android.gms.gcm.TaskParams;
 import com.openlocate.android.BuildConfig;
+import com.firebase.jobdispatcher.JobParameters;
+import com.firebase.jobdispatcher.JobService;
 
 import org.json.JSONException;
 
@@ -44,26 +43,32 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-final public class DispatchLocationService extends GcmTaskService {
+final public class DispatchLocationService extends JobService {
 
     private final static String TAG = DispatchLocationService.class.getSimpleName();
 
     public static final long EXPIRED_PERIOD = TimeUnit.DAYS.toMillis(10);
 
     @Override
-    public int onRunTask(TaskParams taskParams) {
-
+    public boolean onStartJob(JobParameters job) {
         List<OpenLocate.Endpoint> endpoints = null;
         try {
-            endpoints = OpenLocate.Endpoint.fromJson(taskParams.getExtras().getString(Constants.ENDPOINTS_KEY));
+            endpoints = OpenLocate.Endpoint.fromJson(job.getExtras().getString(Constants.ENDPOINTS_KEY));
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return sendLocations(this, endpoints);
+        sendLocations(this, endpoints);
+
+        return false;
     }
 
-    public static int sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {
+    @Override
+    public boolean onStopJob(JobParameters job) {
+        return false;
+    }
+
+    public static boolean sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {
 
         SQLiteOpenHelper helper = DatabaseHelper.getInstance(context);
         LocationDataSource dataSource = new LocationDatabase(helper);
@@ -109,10 +114,10 @@ final public class DispatchLocationService extends GcmTaskService {
             }
         }
 
-        return GcmNetworkManager.RESULT_SUCCESS;
+        return true;
     }
 
-    public static int sendLocations(Context context) throws JSONException {
+    public static boolean sendLocations(Context context) throws JSONException {
         return sendLocations(context, getEndpoints(context));
     }
 
@@ -143,7 +148,7 @@ final public class DispatchLocationService extends GcmTaskService {
         return in;
     }
 
-    private String getUserAgent(Context context) {
+    private static String getUserAgent(Context context) {
         String appName = getApplicationName(context);
         String appVersion = "N/A";
         int appVersionCode = 0;

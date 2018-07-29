@@ -116,7 +116,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private void removeLocationUpdates() {
-        if (mGoogleApiClient != null) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, getLocationUpdatePendingIntent());
         }
     }

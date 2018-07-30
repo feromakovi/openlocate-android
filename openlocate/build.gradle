@@ -16,7 +16,7 @@ ext {
     siteUrl = 'https://github.com/OpenLocate/openlocate-android'
     gitUrl = 'https://github.com/OpenLocate/openlocate-android.git'
 
-    libraryVersion = '2.0.0'
+    libraryVersion = '2.0.0-beta1'
 
     developerId = 'openlocate'
     developerName = 'OpenLocate'

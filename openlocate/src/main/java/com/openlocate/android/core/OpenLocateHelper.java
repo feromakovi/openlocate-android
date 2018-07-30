@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
 import com.firebase.jobdispatcher.Job;
@@ -22,6 +23,8 @@ import com.google.android.gms.location.LocationServices;
 import org.json.JSONException;
 
 import java.util.List;
+
+import static com.firebase.jobdispatcher.RetryStrategy.RETRY_POLICY_EXPONENTIAL;
 
 final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
@@ -148,6 +151,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
                 .setTag(LOCATION_DISPATCH_TAG)
                 .setRecurring(true)
                 .setLifetime(Lifetime.FOREVER)
+                .setConstraints(Constraint.ON_ANY_NETWORK)
                 .setTrigger(Trigger.executionWindow((int)(transmissionIntervalInSecs * 0.9), (int)(transmissionIntervalInSecs * 1.1)))
                 .setReplaceCurrent(false)
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)

@@ -70,7 +70,6 @@ public class OpenLocate {
         this.configuration = configuration;
     }
 
-    @RequiresApi(19)
     public static OpenLocate initialize(Configuration configuration) {
 
         saveConfiguration(configuration);
@@ -96,7 +95,6 @@ public class OpenLocate {
         return sharedInstance;
     }
 
-    @RequiresApi(19)
     public void startTracking(Activity activity) {
 
         if (configuration == null) {
@@ -126,13 +124,11 @@ public class OpenLocate {
         }
     }
 
-    @RequiresApi(19)
     public void stopTracking() {
         SharedPreferenceUtils.getInstance(context).setValue(Constants.TRACKING_STATUS, false);
         openLocateHelper.stopTracking();
     }
 
-    @RequiresApi(19)
     public void updateConfiguration(OpenLocate.Configuration configuration) {
         saveConfiguration(configuration);
         this.configuration = configuration;

@@ -30,6 +30,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Build;
 import android.util.Log;
 
+import com.firebase.jobdispatcher.SimpleJobService;
 import com.openlocate.android.BuildConfig;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
@@ -43,14 +44,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-final public class DispatchLocationService extends JobService {
+final public class DispatchLocationService extends SimpleJobService {
 
     private final static String TAG = DispatchLocationService.class.getSimpleName();
 
     public static final long EXPIRED_PERIOD = TimeUnit.DAYS.toMillis(10);
 
     @Override
-    public boolean onStartJob(JobParameters job) {
+    public int onRunJob(JobParameters job) {
         List<OpenLocate.Endpoint> endpoints = null;
         try {
             endpoints = OpenLocate.Endpoint.fromJson(job.getExtras().getString(Constants.ENDPOINTS_KEY));
@@ -58,17 +59,17 @@ final public class DispatchLocationService extends JobService {
             e.printStackTrace();
         }
 
-        sendLocations(this, endpoints);
+        boolean isSuccess = sendLocations(this, endpoints);
 
-        return false;
-    }
-
-    @Override
-    public boolean onStopJob(JobParameters job) {
-        return false;
+        if (isSuccess) {
+            return RESULT_SUCCESS;
+        }
+        return RESULT_FAIL_RETRY;
     }
 
     public static boolean sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {
+
+        boolean isSuccess = true;
 
         SQLiteOpenHelper helper = DatabaseHelper.getInstance(context);
         LocationDataSource dataSource = new LocationDatabase(helper);
@@ -89,6 +90,8 @@ final public class DispatchLocationService extends JobService {
                     long latestCreatedLocationDate =
                             sentLocations.get(sentLocations.size() - 1).getCreated().getTime();
                     SharedPreferenceUtils.getInstance(context).setValue(key, latestCreatedLocationDate);
+                } else if (sentLocations != null && sentLocations.isEmpty()) {
+                    isSuccess = false;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,7 +117,7 @@ final public class DispatchLocationService extends JobService {
             }
         }
 
-        return true;
+        return isSuccess;
     }
 
     public static boolean sendLocations(Context context) throws JSONException {

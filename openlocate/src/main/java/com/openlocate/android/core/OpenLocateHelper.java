@@ -30,7 +30,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = OpenLocateHelper.class.getSimpleName();
-    private final static String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task_v2";
+    private final static String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task_v3";
 
     private final Context context;
 
@@ -99,12 +99,13 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
 
     private void buildLocationRequest() {
         long locationUpdateInterval = configuration.getLocationUpdateInterval() * 1000;
+        long locationTransmissionInterval = configuration.getTransmissionInterval() * 1000;
         int locationAccuracy = configuration.getLocationAccuracy().getLocationRequestAccuracy();
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(locationUpdateInterval);
         mLocationRequest.setFastestInterval(locationUpdateInterval / 2);
-        mLocationRequest.setMaxWaitTime(Math.max(locationUpdateInterval * 2, locationUpdateInterval / 3));
+        mLocationRequest.setMaxWaitTime(Math.max(locationUpdateInterval * 2, (int)(locationTransmissionInterval * 0.85 / 3)));
         mLocationRequest.setPriority(locationAccuracy);
     }
 
@@ -146,6 +147,9 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
 
         long transmissionIntervalInSecs = configuration.getTransmissionInterval();
 
+        int initialBackoff = 600;
+        int maximumBackoff = Math.max((int)transmissionIntervalInSecs / 2, 3600);
+
         Job job = jobDispatcher.newJobBuilder()
                 .setService(DispatchLocationService.class)
                 .setTag(LOCATION_DISPATCH_TAG)
@@ -154,7 +158,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
                 .setConstraints(Constraint.ON_ANY_NETWORK)
                 .setTrigger(Trigger.executionWindow((int)(transmissionIntervalInSecs * 0.9), (int)(transmissionIntervalInSecs * 1.1)))
                 .setReplaceCurrent(false)
-                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+                .setRetryStrategy(jobDispatcher.newRetryStrategy(RETRY_POLICY_EXPONENTIAL, initialBackoff, maximumBackoff))
                 .setExtras(bundle)
                 .build();
 

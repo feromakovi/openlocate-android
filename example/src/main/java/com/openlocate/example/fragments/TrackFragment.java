@@ -98,17 +98,13 @@ public class TrackFragment extends Fragment {
     }
 
     private void startTracking() {
-        if (Build.VERSION.SDK_INT >= 19) {
-            OpenLocate.getInstance().startTracking(getActivity());
-            onTrackingStatusChange();
-        }
+        OpenLocate.getInstance().startTracking(getActivity());
+        onTrackingStatusChange();
     }
 
     private void stopTracking() {
-        if (Build.VERSION.SDK_INT >= 19) {
-            OpenLocate.getInstance().stopTracking();
-            onTrackingStatusChange();
-        }
+        OpenLocate.getInstance().stopTracking();
+        onTrackingStatusChange();
     }
 
     private void onTrackingStatusChange() {

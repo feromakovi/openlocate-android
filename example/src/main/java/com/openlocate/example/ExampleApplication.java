@@ -24,8 +24,6 @@ public class ExampleApplication extends Application {
                 .withoutDeviceModel()
                 .build();
 
-        if (Build.VERSION.SDK_INT >= 19) {
-            OpenLocate.initialize(configuration);
-        }
+        OpenLocate.initialize(configuration);
     }
 }

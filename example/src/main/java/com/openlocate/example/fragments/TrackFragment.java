@@ -108,12 +108,10 @@ public class TrackFragment extends Fragment {
     }
 
     private void onTrackingStatusChange() {
-        if (Build.VERSION.SDK_INT >= 19) {
-            boolean enabled = OpenLocate.getInstance().isTracking();
+        boolean enabled = OpenLocate.getInstance().isTracking();
 
-            startButton.setVisibility(enabled ? View.GONE : View.VISIBLE);
-            stopButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
-        }
+        startButton.setVisibility(enabled ? View.GONE : View.VISIBLE);
+        stopButton.setVisibility(enabled ? View.VISIBLE : View.GONE);
     }
 
     private void configureVersionLabel() {

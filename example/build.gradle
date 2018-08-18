@@ -41,7 +41,7 @@ android {
         applicationId "com.openlocate.example"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 12
+        versionCode 13
         versionName "1.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

@@ -44,7 +44,7 @@ final class HttpClientImpl implements HttpClient {
         HttpTask httpTask = new HttpTask();
 
         try {
-            HttpResponse response = httpTask.execute(request).get();
+            HttpResponse response = httpTask.execute(request);
             if (response.isSuccess()) {
                 request.getSuccessCallback().onCompletion(
                         request,
@@ -56,20 +56,10 @@ final class HttpClientImpl implements HttpClient {
                         response
                 );
             }
-        } catch (ExecutionException exception) {
+        } catch (Exception exception) {
             HttpResponse response = new HttpResponse.Builder()
                     .setError(new Error(exception.getMessage()))
                     .setStatusCode(500)
-                    .build();
-
-            request.getFailureCallback().onCompletion(
-                    request,
-                    response
-            );
-        } catch (InterruptedException exception) {
-            HttpResponse response = new HttpResponse.Builder()
-                    .setError(new Error(exception.getMessage()))
-                    .setStatusCode(501)
                     .build();
 
             request.getFailureCallback().onCompletion(

@@ -29,14 +29,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
-class HttpTask extends AsyncTask<HttpRequest, Void, HttpResponse> {
+class HttpTask {
 
     private final static int CONNECTION_READ_TIMEOUT = 15000;
     private final static int CONNECTION_CONNECT_TIMEOUT = 15000;
     private static String CONNECTION_CHARSET = "UTF-8";
 
-    @Override
-    protected HttpResponse doInBackground(HttpRequest... params) {
+    public HttpResponse execute(HttpRequest... params) {
         HttpRequest request = params[0];
         HttpResponse response;
 

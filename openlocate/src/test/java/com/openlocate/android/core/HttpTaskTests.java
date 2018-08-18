@@ -51,11 +51,11 @@ public class HttpTaskTests {
 
             // When
             try {
-                HttpResponse response = task.execute(request).get();
+                HttpResponse response = task.execute(request);
 
                 // Then
                 assertEquals(0, response.getStatusCode());
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (Exception e) {
                 assertFalse(true);
             }
         } catch (Exception e) {

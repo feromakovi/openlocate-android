@@ -30,7 +30,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = OpenLocateHelper.class.getSimpleName();
-    private final static String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task_v3";
+    private final static String LOCATION_DISPATCH_TAG = OpenLocate.class.getCanonicalName() + ".location_dispatch_task_v2";
 
     private final Context context;
 

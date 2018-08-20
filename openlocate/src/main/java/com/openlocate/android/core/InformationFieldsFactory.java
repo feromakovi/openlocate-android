@@ -96,7 +96,7 @@ final class InformationFieldsFactory {
         }
 
         if (!configuration.isChargingInfoCollectionDisabled()) {
-            Intent batteryIntent = context.registerReceiver(
+            Intent batteryIntent = context.getApplicationContext().registerReceiver(
                     null,
                     new IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             );

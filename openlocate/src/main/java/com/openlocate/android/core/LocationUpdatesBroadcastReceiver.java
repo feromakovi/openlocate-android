@@ -21,11 +21,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteFullException;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.location.LocationResult;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
@@ -39,53 +41,81 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
         if (intent != null) {
             final String action = intent.getAction();
             if (action.contains(ACTION_PROCESS_UPDATES)) {
-
-                LocationResult result = LocationResult.extractResult(intent);
-                if (result == null) {
-                    return;
-                }
-
-                List<Location> locations = result.getLocations();
-                if (locations == null || locations.isEmpty() == true) {
-                    return;
-                }
-
-                try {
-                    OpenLocate.Configuration configuration = OpenLocate.getInstance().getConfiguration();
-                    AdvertisingIdClient.Info advertisingIdInfo = OpenLocate.getInstance().getAdvertisingIdInfo();
-
-                    if (configuration != null && advertisingIdInfo != null) {
-                        processLocations(locations, context, configuration, advertisingIdInfo);
-                    }
-                } catch (IllegalStateException e) {
-                    Log.w(TAG, "Could not getInstance() of OL.");
+                LocationResult locationResult = LocationResult.extractResult(intent);
+                if (locationResult != null) {
+                    new PersistLocationUpdatesTask(goAsync(), context, locationResult).execute();
                 }
             }
         }
     }
 
-    private void processLocations(List<Location> locations, Context context,
-                                  OpenLocate.Configuration configuration,
-                                  AdvertisingIdClient.Info advertisingIdInfo) {
+    private static class PersistLocationUpdatesTask extends AsyncTask<Void, Void, Boolean> {
 
-        LocationDatabase locationsDatabase = new LocationDatabase(DatabaseHelper.getInstance(context));
-        try {
-            for (Location location : locations) {
+        private PendingResult pendingResult;
+        private WeakReference<Context> context;
+        private LocationResult locationResult;
 
-                Log.v(TAG, location.toString());
+        PersistLocationUpdatesTask(PendingResult pendingResult, Context context, LocationResult locationResult) {
+            this.pendingResult = pendingResult;
+            this.context = new WeakReference<>(context);
+            this.locationResult = locationResult;
+        }
 
-                OpenLocateLocation olLocation = OpenLocateLocation.from(
-                        location,
-                        advertisingIdInfo,
-                        InformationFieldsFactory.collectInformationFields(context, configuration)
-                );
+        @Override
+        protected Boolean doInBackground(Void... params) {
 
-                locationsDatabase.add(olLocation);
+            Context context = this.context.get();
+            List<Location> locations = locationResult.getLocations();
+            if (context == null || locations == null || locations.isEmpty() == true) {
+                return true;
             }
-        } catch (SQLiteFullException exception) {
-            Log.w(TAG, "Database is full. Cannot add data.");
-        } finally {
-            locationsDatabase.close();
+
+            try {
+                OpenLocate.Configuration configuration = OpenLocate.getInstance().getConfiguration();
+                AdvertisingIdClient.Info advertisingIdInfo = OpenLocate.getInstance().getAdvertisingIdInfo();
+
+                if (configuration != null && advertisingIdInfo != null) {
+                    processLocations(locations, context, configuration, advertisingIdInfo);
+                }
+            } catch (IllegalStateException e) {
+                Log.w(TAG, "Could not getInstance() of OL.");
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Could not persist ol updates.");
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (pendingResult != null) {
+                pendingResult.finish();
+            }
+        }
+
+        private void processLocations(List<Location> locations, Context context,
+                                      OpenLocate.Configuration configuration,
+                                      AdvertisingIdClient.Info advertisingIdInfo) {
+
+            LocationDatabase locationsDatabase = new LocationDatabase(DatabaseHelper.getInstance(context));
+            try {
+                for (Location location : locations) {
+
+                    Log.v(TAG, location.toString());
+
+                    OpenLocateLocation olLocation = OpenLocateLocation.from(
+                            location,
+                            advertisingIdInfo,
+                            InformationFieldsFactory.collectInformationFields(context, configuration)
+                    );
+
+                    locationsDatabase.add(olLocation);
+                }
+            } catch (SQLiteFullException exception) {
+                Log.w(TAG, "Database is full. Cannot add data.");
+            } finally {
+                locationsDatabase.close();
+            }
         }
     }
 }

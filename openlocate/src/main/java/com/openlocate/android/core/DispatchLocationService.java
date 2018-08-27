@@ -59,12 +59,18 @@ final public class DispatchLocationService extends SimpleJobService {
             e.printStackTrace();
         }
 
-        boolean isSuccess = sendLocations(this, endpoints);
-
-        if (isSuccess) {
-            return RESULT_SUCCESS;
+        boolean isSuccess = false;
+        try {
+            isSuccess = sendLocations(this, endpoints);
         }
-        return RESULT_FAIL_RETRY;
+        catch (RuntimeException e) {
+            Log.e(TAG, "Could not persist ol updates.");
+        } finally {
+            if (isSuccess) {
+                return RESULT_SUCCESS;
+            }
+            return RESULT_FAIL_RETRY;
+        }
     }
 
     public static boolean sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {

@@ -29,7 +29,8 @@ ext {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -42,8 +43,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 26
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.compileSdkVersion
         versionCode 1
         versionName "2.0.0-beta1"
 

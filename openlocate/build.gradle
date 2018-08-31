@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 //apply plugin: 'com.jfrog.bintray'
 //apply plugin: 'jacoco'
 //apply plugin: 'maven-publish'
@@ -80,6 +81,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20170516'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 version = libraryVersion
@@ -114,6 +116,9 @@ artifacts {
 // Bintray
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
+repositories {
+    mavenCentral()
+}
 
 //bintray {
 //    user = properties.getProperty("bintray.user")

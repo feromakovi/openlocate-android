@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.jfrog.bintray'
-apply plugin: 'jacoco'
-apply plugin: 'maven-publish'
+//apply plugin: 'com.jfrog.bintray'
+//apply plugin: 'jacoco'
+//apply plugin: 'maven-publish'
 
 ext {
     bintrayRepo = 'OpenLocate'
@@ -35,11 +35,11 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
 
-        unitTests.all {
-            jacoco {
-                includeNoLocationClasses = true
-            }
-        }
+//        unitTests.all {
+//            jacoco {
+//                includeNoLocationClasses = true
+//            }
+//        }
     }
 
     defaultConfig {
@@ -49,7 +49,6 @@ android {
         versionName "2.0.0-beta1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        multiDexEnabled true
     }
 
     buildTypes {
@@ -65,8 +64,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:26.1.0'
-    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:support-compat:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
 
     implementation('com.google.android.gms:play-services-location:11.0.4', {
         exclude group: 'com.android.support', module: 'support-v4'
@@ -77,10 +76,10 @@ dependencies {
 
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
 
-    androidTestImplementation 'com.android.support:support-annotations:27.1.0'
+    androidTestImplementation 'com.android.support:support-annotations:27.1.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     testImplementation 'junit:junit:4.12'
-    testCompile 'org.json:json:20170516'
+    testImplementation 'org.json:json:20170516'
 }
 
 version = libraryVersion
@@ -116,70 +115,70 @@ artifacts {
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+//bintray {
+//    user = properties.getProperty("bintray.user")
+//    key = properties.getProperty("bintray.apikey")
+//
+//    configurations = ['archives']
+//    pkg {
+//        repo = bintrayRepo
+//        name = bintrayName
+//        vcsUrl = gitUrl
+//        licenses = allLicenses
+//        publish = true
+//        userOrg = bintrayUserOrg
+//    }
+//}
 
-    configurations = ['archives']
-    pkg {
-        repo = bintrayRepo
-        name = bintrayName
-        vcsUrl = gitUrl
-        licenses = allLicenses
-        publish = true
-        userOrg = bintrayUserOrg
-    }
-}
+//task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+//
+//    reports {
+//        xml.enabled = true
+//        html.enabled = true
+//    }
+//
+//    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+//    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
+//    def mainSrc = "${project.projectDir}/src/main/java"
+//
+//    sourceDirectories = files([mainSrc])
+//    classDirectories = files([debugTree])
+//    executionData = fileTree(dir: "$buildDir", includes: [
+//            "jacoco/testDebugUnitTest.exec",
+//            "outputs/code-coverage/connected/*coverage.ec"
+//    ])
+//}
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+//publishing {
+//    repositories {
+//        maven {
+//            url "s3://openlocate-android"
+//            credentials(AwsCredentials) {
+//                accessKey "${properties.getProperty("aws.accessKey")}"
+//                secretKey "${properties.getProperty("aws.secretKey")}"
+//            }
+//        }
+//    }
+//
+//    publications {
+//        mavenJava(MavenPublication) {
+//            version = project.version
+//            artifactId = project.name
+//            groupId = project.group
+//            artifact("$buildDir/outputs/aar/${project.name}-release.aar")
+//
+//            //generate pom nodes for dependencies
+//            pom.withXml {
+//                def dependenciesNode = asNode().appendNode('dependencies')
+//                configurations.compile.allDependencies.each { dependency ->
+//                    def dependencyNode = dependenciesNode.appendNode('dependency')
+//                    dependencyNode.appendNode('groupId', dependency.group)
+//                    dependencyNode.appendNode('artifactId', dependency.name)
+//                    dependencyNode.appendNode('version', dependency.version)
+//                }
+//            }
+//        }
+//    }
+//}
 
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
-    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
-    def mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories = files([mainSrc])
-    classDirectories = files([debugTree])
-    executionData = fileTree(dir: "$buildDir", includes: [
-            "jacoco/testDebugUnitTest.exec",
-            "outputs/code-coverage/connected/*coverage.ec"
-    ])
-}
-
-publishing {
-    repositories {
-        maven {
-            url "s3://openlocate-android"
-            credentials(AwsCredentials) {
-                accessKey "${properties.getProperty("aws.accessKey")}"
-                secretKey "${properties.getProperty("aws.secretKey")}"
-            }
-        }
-    }
-
-    publications {
-        mavenJava(MavenPublication) {
-            version = project.version
-            artifactId = project.name
-            groupId = project.group
-            artifact("$buildDir/outputs/aar/${project.name}-release.aar")
-
-            //generate pom nodes for dependencies
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.compile.allDependencies.each { dependency ->
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', dependency.group)
-                    dependencyNode.appendNode('artifactId', dependency.name)
-                    dependencyNode.appendNode('version', dependency.version)
-                }
-            }
-        }
-    }
-}
-
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+//apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'

@@ -16,6 +16,9 @@
 
 package com.openlocate.android.core;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,13 +26,18 @@ import android.database.sqlite.SQLiteFullException;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.location.LocationResult;
 
+import com.openlocate.android.R;
 import java.lang.ref.WeakReference;
 import java.util.List;
+import java.util.Random;
 import org.json.JSONException;
 
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
@@ -41,9 +49,9 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent != null) {
-            final String action = intent.getAction();
-            if (action.contains(ACTION_PROCESS_UPDATES)) {
+            if (ACTION_PROCESS_UPDATES.equals(intent.getAction())) {
                 LocationResult locationResult = LocationResult.extractResult(intent);
+                Log.i(TAG, "LocationResult retrieved: " + locationResult + " intent: " + intent.getExtras());
                 if (locationResult != null) {
                     new PersistLocationUpdatesTask(goAsync(), context, locationResult).execute();
                 }
@@ -51,25 +59,27 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    private static class PersistLocationUpdatesTask extends AsyncTask<Void, Void, Boolean> {
+    private static class PersistLocationUpdatesTask extends AsyncTask<Void, Void, Integer> {
 
         private PendingResult pendingResult;
         private WeakReference<Context> context;
         private LocationResult locationResult;
+        private InfoManager infoManager;
 
         PersistLocationUpdatesTask(PendingResult pendingResult, Context context, LocationResult locationResult) {
             this.pendingResult = pendingResult;
             this.context = new WeakReference<>(context);
             this.locationResult = locationResult;
+            this.infoManager = new InfoManager(context);
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-
+        protected Integer doInBackground(Void... params) {
+            int result = -1;
             Context context = this.context.get();
             List<Location> locations = locationResult.getLocations();
             if (context == null || locations == null || locations.isEmpty() == true) {
-                return true;
+                return result;
             }
 
             try {
@@ -84,27 +94,28 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
                     prefs.getBoolanValue(Constants.ADVERTISING_ID_TRACKING, false)
                 );
 
-                processLocations(locations, context, configuration, advertisingIdInfo);
+                result = processLocations(locations, context, configuration, advertisingIdInfo);
             } catch (IllegalStateException | JSONException e) {
                 Log.w(TAG, "Could not getInstance() of OL.");
             } catch (RuntimeException e) {
                 Log.e(TAG, "Could not persist ol updates.");
             }
 
-            return true;
+            return result;
         }
 
         @Override
-        protected void onPostExecute(Boolean result) {
+        protected void onPostExecute(Integer result) {
+            infoManager.store(result);
             if (pendingResult != null) {
                 pendingResult.finish();
             }
         }
 
-        private void processLocations(List<Location> locations, Context context,
+        private int processLocations(List<Location> locations, Context context,
                                       OpenLocate.Configuration configuration,
                                       AdvertisingIdClient.Info advertisingIdInfo) {
-
+            int result = 0;
             LocationDatabase locationsDatabase = new LocationDatabase(DatabaseHelper.getInstance(context));
             try {
                 for (Location location : locations) {
@@ -118,12 +129,14 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
                     );
 
                     locationsDatabase.add(olLocation);
+                    result++;
                 }
             } catch (SQLiteFullException exception) {
                 Log.w(TAG, "Database is full. Cannot add data.");
             } finally {
                 locationsDatabase.close();
             }
+            return result;
         }
     }
 }

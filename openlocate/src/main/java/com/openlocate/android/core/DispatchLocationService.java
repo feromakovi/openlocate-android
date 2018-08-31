@@ -52,6 +52,7 @@ final public class DispatchLocationService extends SimpleJobService {
 
     @Override
     public int onRunJob(JobParameters job) {
+        final InfoManager infoManager = new InfoManager(this);
         List<OpenLocate.Endpoint> endpoints = null;
         try {
             endpoints = OpenLocate.Endpoint.fromJson(job.getExtras().getString(Constants.ENDPOINTS_KEY));
@@ -59,23 +60,25 @@ final public class DispatchLocationService extends SimpleJobService {
             e.printStackTrace();
         }
 
-        boolean isSuccess = false;
+        int syncedCount = -1;
         try {
-            isSuccess = sendLocations(this, endpoints);
+            syncedCount = sendLocations(this, endpoints);
+            Log.i(TAG, "DispatchLocation success: " + syncedCount);
+            infoManager.sync(syncedCount);
         }
         catch (RuntimeException e) {
             Log.e(TAG, "Could not persist ol updates.");
         } finally {
-            if (isSuccess) {
+            if (syncedCount > 0) {
                 return RESULT_SUCCESS;
             }
             return RESULT_FAIL_RETRY;
         }
     }
 
-    public static boolean sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {
+    public static int sendLocations(Context context, List<OpenLocate.Endpoint> endpoints) {
 
-        boolean isSuccess = true;
+        int syncedCount = -1;
 
         SQLiteOpenHelper helper = DatabaseHelper.getInstance(context);
         LocationDataSource dataSource = new LocationDatabase(helper);
@@ -92,12 +95,13 @@ final public class DispatchLocationService extends SimpleJobService {
                 long timestamp = SharedPreferenceUtils.getInstance(context).getLongValue(key, 0);
                 List<OpenLocateLocation> sentLocations = dispatcher.postLocations(httpClient, endpoint, userAgent, timestamp, dataSource);
 
-                if (sentLocations != null && sentLocations.isEmpty() == false) {
+                if (sentLocations != null && !sentLocations.isEmpty()) {
+                    syncedCount = sentLocations.size();
                     long latestCreatedLocationDate =
                             sentLocations.get(sentLocations.size() - 1).getCreated().getTime();
                     SharedPreferenceUtils.getInstance(context).setValue(key, latestCreatedLocationDate);
                 } else if (sentLocations != null && sentLocations.isEmpty()) {
-                    isSuccess = false;
+                    syncedCount = -1;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -123,12 +127,12 @@ final public class DispatchLocationService extends SimpleJobService {
             }
         }
 
-        return isSuccess;
+        return syncedCount;
     }
 
-    public static boolean sendLocations(Context context) throws JSONException {
-        return sendLocations(context, getEndpoints(context));
-    }
+    //public static boolean sendLocations(Context context) throws JSONException {
+    //    return sendLocations(context, getEndpoints(context));
+    //}
 
     public static List<OpenLocate.Endpoint> getEndpoints(Context context) throws JSONException {
         SharedPreferenceUtils preferences = SharedPreferenceUtils.getInstance(context);

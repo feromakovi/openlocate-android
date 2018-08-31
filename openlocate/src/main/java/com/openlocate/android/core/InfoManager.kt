@@ -6,6 +6,8 @@ import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_NONE
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.support.v4.app.NotificationCompat
 import com.openlocate.android.core.InfoManager.Companion.NOTIFICATION_ID
 
@@ -31,22 +33,23 @@ class InfoManager(val context : Context) {
   }
 
   companion object {
-    const val NOTIFICATION_ID = 123
+    internal const val NOTIFICATION_ID = 123
   }
 }
 
 private fun NotificationManager.show(context: Context, text : String) {
   val channelId = "open-locate"
-  val channel = NotificationChannel(channelId, "open locate service", IMPORTANCE_NONE)
-  createNotificationChannel(channel)
+  if (VERSION.SDK_INT >= VERSION_CODES.O) {
+    val channel = NotificationChannel(channelId, "open locate service", IMPORTANCE_NONE)
+    createNotificationChannel(channel)
+  }
 
-  val notification = Notification.Builder(context, channelId)
+  val notification = NotificationCompat.Builder(context, channelId)
       .setSmallIcon(android.R.drawable.ic_menu_mylocation)
       .setContentTitle("Locations")
       .setContentText(text)
       .setPriority(NotificationCompat.PRIORITY_DEFAULT)
       .build()
-
 
   notify(NOTIFICATION_ID, notification)
 }

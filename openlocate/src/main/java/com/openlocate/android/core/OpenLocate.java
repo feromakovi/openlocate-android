@@ -171,6 +171,8 @@ public class OpenLocate {
             @Override
             public void onAdvertisingInfoTaskExecute(AdvertisingIdClient.Info info) {
                 advertisingIdInfo = info;
+                SharedPreferenceUtils.getInstance(context).setValue(Constants.ADVERTISING_ID, info.getId());
+                SharedPreferenceUtils.getInstance(context).setValue(Constants.ADVERTISING_ID_TRACKING, info.isLimitAdTrackingEnabled());
                 openLocateHelper.startTracking();
             }
         });
@@ -259,7 +261,12 @@ public class OpenLocate {
             }
 
             public Builder(Context context, String serverUrl) {
-                this(context, Arrays.asList(new Endpoint(serverUrl, null)));
+                this.context = context.getApplicationContext();
+                this.serverUrl = serverUrl;
+            }
+
+            public Builder(Context context, Endpoint endpoint) {
+                this(context, Arrays.asList(endpoint));
             }
 
             public Builder setHeaders(HashMap<String, String> headers) {

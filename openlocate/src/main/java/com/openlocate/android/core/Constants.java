@@ -31,6 +31,8 @@ final class Constants {
     // Location service intent keys
     static final String ENDPOINTS_KEY = "endpoints";
     static final String TRACKING_STATUS = "tracking_status";
+    static final String ADVERTISING_ID = "advertising_id";
+    static final String ADVERTISING_ID_TRACKING = "advertising_id_tracking";
 
     public static final String OPENLOCATE = "com.openlocate.android";
 }

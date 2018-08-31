@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteFullException;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
@@ -29,6 +30,7 @@ import com.google.android.gms.location.LocationResult;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+import org.json.JSONException;
 
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
 
@@ -71,13 +73,19 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
             }
 
             try {
-                OpenLocate.Configuration configuration = OpenLocate.getInstance().getConfiguration();
-                AdvertisingIdClient.Info advertisingIdInfo = OpenLocate.getInstance().getAdvertisingIdInfo();
+                final SharedPreferenceUtils prefs = SharedPreferenceUtils.getInstance(context);
 
-                if (configuration != null && advertisingIdInfo != null) {
-                    processLocations(locations, context, configuration, advertisingIdInfo);
-                }
-            } catch (IllegalStateException e) {
+                final OpenLocate.Configuration configuration = new OpenLocate.Configuration.Builder(context,
+                        OpenLocate.Endpoint.fromJson(prefs.getStringValue(Constants.ENDPOINTS_KEY, null)))
+                    .build();
+
+                final AdvertisingIdClient.Info advertisingIdInfo = new AdvertisingIdClient.Info(
+                    prefs.getStringValue(Constants.ADVERTISING_ID, ""),
+                    prefs.getBoolanValue(Constants.ADVERTISING_ID_TRACKING, false)
+                );
+
+                processLocations(locations, context, configuration, advertisingIdInfo);
+            } catch (IllegalStateException | JSONException e) {
                 Log.w(TAG, "Could not getInstance() of OL.");
             } catch (RuntimeException e) {
                 Log.e(TAG, "Could not persist ol updates.");

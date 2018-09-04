@@ -58,6 +58,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
 
+        internalTest {
+            minifyEnabled false
+        }
+
         debug {
             testCoverageEnabled true
         }

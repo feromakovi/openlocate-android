@@ -22,13 +22,13 @@ class InfoManager(val context : Context) {
 
   fun store(count: Int) {
     val allStored = locationsDB.size()
-    val text = "Location in DB: $storedLocations - Newly inserted: $count - All stored locations: $allStored"
+    val text = "DB items: $storedLocations - Inserted: $count - All: $allStored"
     notificationManager.show(context, text)
   }
 
   fun sync(count: Int) {
     val allStored = locationsDB.size()
-    val text = "Location in DB: $storedLocations - Synced: $count - All stored locations: $allStored"
+    val text = "DB items: $storedLocations - Synced: $count - All: $allStored"
     notificationManager.show(context, text)
   }
 

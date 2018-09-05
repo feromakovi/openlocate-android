@@ -16,28 +16,19 @@
 
 package com.openlocate.android.core;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteFullException;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.location.LocationResult;
 
-import com.openlocate.android.R;
 import java.lang.ref.WeakReference;
 import java.util.List;
-import java.util.Random;
 import org.json.JSONException;
 
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {

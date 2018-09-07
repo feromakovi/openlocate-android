@@ -25,8 +25,6 @@ final class InformationFieldsFactory {
     private String wifiSsid;
     private String wifiBssid;
     private String connectionType;
-    private LocationProvider locationProvider;
-    private LocationContext locationContext;
 
     private static final String BASE_NAME = "Android";
 
@@ -54,31 +52,31 @@ final class InformationFieldsFactory {
         }
 
         if (!this.configuration.isLocationMethodCollectionDisabled()) {
-            updateLocationProvider();
+            //updateLocationProvider();
         }
         if (!this.configuration.isLocationContextCollectionDisabled()) {
-            updateLocationContext();
+            //updateLocationContext();
         }
 
     }
 
-    public static InformationFields collectInformationFields(Context context, OpenLocate.Configuration configuration) {
+    public static InformationFields collectInformationFields(Context context, OpenLocate.Configuration configuration, String provider) {
 
         InformationFieldsFactory informationFieldsFactory =  new InformationFieldsFactory(context, configuration);
 
         return InformationFields.from(informationFieldsFactory.manufacturer, informationFieldsFactory.model, informationFieldsFactory.isCharging,
                 informationFieldsFactory.operatingSystem, informationFieldsFactory.carrierName, informationFieldsFactory.wifiSsid,
-                informationFieldsFactory.wifiBssid, informationFieldsFactory.connectionType, informationFieldsFactory.locationProvider.getValue(), informationFieldsFactory.locationContext.getValue());
+                informationFieldsFactory.wifiBssid, informationFieldsFactory.connectionType, provider);
 
     }
 
     public static InformationFields getInformationFields(String deviceManufacturer, String deviceModel, String chargingState,
                                                          String operatingSystem, String carrierName, String wifiSSID,
-                                                         String wifiBSSID, String connectionType, String locationMethod, String locationContext) {
+                                                         String wifiBSSID, String connectionType, String locationMethod) {
 
         return InformationFields.from(deviceManufacturer, deviceModel, chargingState,
                                       operatingSystem, carrierName, wifiSSID,
-                                      wifiBSSID, connectionType, locationMethod, locationContext);
+                                      wifiBSSID, connectionType, locationMethod);
     }
 
     private void updateDeviceInfo() {
@@ -102,14 +100,6 @@ final class InformationFieldsFactory {
             );
             this.isCharging = String.valueOf(isDeviceCharging(batteryIntent));
         }
-    }
-
-    private void updateLocationContext() {
-        locationContext = LocationContext.getLocationContext();
-    }
-
-    private void updateLocationProvider() {
-        locationProvider = LocationProvider.getLocationProvider(context);
     }
 
     private boolean isDeviceCharging(Intent batteryIntent) {

@@ -11,14 +11,13 @@ final class InformationFields {
     private final String wifiSsid;
     private final String wifiBssid;
     private final String connectionType;
-    private final LocationProvider locationProvider;
-    private final LocationContext locationContext;
+    private final String locationProvider;
 
     private InformationFields(String deviceManufacturer, String deviceModel,
                              String chargingState, String operatingSystem,
                              String carrierName, String wifiSSID,
                              String wifiBSSID, String connectionType,
-                             String locationMethod, String locationContext) {
+                             String locationMethod) {
 
             this.manufacturer = deviceManufacturer;
             this.model = deviceModel;
@@ -28,8 +27,7 @@ final class InformationFields {
             this.wifiSsid = wifiSSID;
             this.wifiBssid = wifiBSSID;
             this.connectionType = connectionType;
-            this.locationProvider = LocationProvider.get(locationMethod);
-            this.locationContext = LocationContext.get(locationContext);
+            this.locationProvider = locationMethod;
 
     }
 
@@ -65,12 +63,8 @@ final class InformationFields {
         return connectionType;
     }
 
-    public LocationProvider getLocationProvider() {
+    public String getLocationProvider() {
         return locationProvider;
-    }
-
-    public LocationContext getLocationContext() {
-        return locationContext;
     }
 
     static InformationFields from(String deviceManufacturer,
@@ -81,9 +75,8 @@ final class InformationFields {
                                          String wifiSSID,
                                          String wifiBSSID,
                                          String connectionType,
-                                         String locationMethod,
-                                         String locationContext) {
-        return new InformationFields(deviceManufacturer, deviceModel, chargingState, operatingSystem, carrierName, wifiSSID, wifiBSSID, connectionType, locationMethod, locationContext);
+                                         String locationMethod) {
+        return new InformationFields(deviceManufacturer, deviceModel, chargingState, operatingSystem, carrierName, wifiSSID, wifiBSSID, connectionType, locationMethod);
     }
 
     @Override
@@ -98,7 +91,6 @@ final class InformationFields {
                 ", wifiBssid='" + wifiBssid + '\'' +
                 ", connectionType='" + connectionType + '\'' +
                 ", locationProvider=" + locationProvider +
-                ", locationContext=" + locationContext +
                 '}';
     }
 }

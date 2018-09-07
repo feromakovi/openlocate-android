@@ -170,12 +170,7 @@ public final class OpenLocateLocation implements JsonObjectType {
                 locationMethod = json.getString(Keys.LOCATION_METHOD);
             }
 
-            String locationContext = "";
-            if (json.has(Keys.LOCATION_CONTEXT)) {
-                locationContext = json.getString(Keys.LOCATION_CONTEXT);
-            }
-
-            informationFields = InformationFieldsFactory.getInformationFields(deviceManufacturer, deviceModel, chargingState, operatingSystem, carrierName, wifiSSID, wifiBSSID, connectionType, locationMethod, locationContext);
+            informationFields = InformationFieldsFactory.getInformationFields(deviceManufacturer, deviceModel, chargingState, operatingSystem, carrierName, wifiSSID, wifiBSSID, connectionType, locationMethod);
 
             advertisingInfo = new AdvertisingIdClient.Info(
                     json.getString(Keys.AD_ID),
@@ -238,12 +233,8 @@ public final class OpenLocateLocation implements JsonObjectType {
                 jsonObject.put(Keys.CONNECTION_TYPE, informationFields.getConnectionType());
             }
 
-            if(!TextUtils.isEmpty(informationFields.getLocationProvider().getValue())) {
-                jsonObject.put(Keys.LOCATION_METHOD, informationFields.getLocationProvider().getValue());
-            }
-
-            if(!TextUtils.isEmpty(informationFields.getLocationContext().getValue())) {
-                jsonObject.put(Keys.LOCATION_CONTEXT, informationFields.getLocationContext().getValue());
+            if(!TextUtils.isEmpty(informationFields.getLocationProvider())) {
+                jsonObject.put(Keys.LOCATION_METHOD, informationFields.getLocationProvider());
             }
         } catch (NullPointerException | JSONException e) {
             e.printStackTrace();

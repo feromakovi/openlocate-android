@@ -55,21 +55,21 @@ enum LocationProvider {
         return lookup.get(value);
     }
 
-    static LocationProvider getLocationProvider(Context context) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            return GPS;
-        }
-
-        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            return NETWORK;
-        }
-
-        if (locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
-            return PASSIVE;
-        }
-
-        return DISABLED;
-    }
+//    static LocationProvider getLocationProvider(Context context) {
+//        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+//
+//        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+//            return GPS;
+//        }
+//
+//        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+//            return NETWORK;
+//        }
+//
+//        if (locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
+//            return PASSIVE;
+//        }
+//
+//        return DISABLED;
+//    }
 }

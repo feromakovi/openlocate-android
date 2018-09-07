@@ -116,7 +116,7 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
                     OpenLocateLocation olLocation = OpenLocateLocation.from(
                             location,
                             advertisingIdInfo,
-                            InformationFieldsFactory.collectInformationFields(context, configuration)
+                            InformationFieldsFactory.collectInformationFields(context, configuration, location.getProvider())
                     );
 
                     locationsDatabase.add(olLocation);

@@ -1,6 +1,5 @@
 package com.openlocate.android.core
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_NONE
@@ -14,22 +13,26 @@ import com.openlocate.android.core.InfoManager.Companion.NOTIFICATION_ID
 /**
  * Created by feromakovi <feromakovi@gmail.com> on 31/08/2018.
  */
-class InfoManager(val context : Context) {
+class InfoManager @JvmOverloads constructor(val context : Context, private val debug : Boolean = false) {
 
   private val locationsDB : LocationDatabase = LocationDatabase(DatabaseHelper.getInstance(context))
   private val storedLocations: Long = locationsDB.size()
   private val notificationManager : NotificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
   fun store(count: Int) {
-    val allStored = locationsDB.size()
-    val text = "DB items: $storedLocations - Inserted: $count - All: $allStored"
-    notificationManager.show(context, text)
+    if (debug) {
+      val allStored = locationsDB.size()
+      val text = "DB items: $storedLocations - Inserted: $count - All: $allStored"
+      notificationManager.show(context, text)
+    }
   }
 
   fun sync(count: Int) {
-    val allStored = locationsDB.size()
-    val text = "DB items: $storedLocations - Synced: $count - All: $allStored"
-    notificationManager.show(context, text)
+    if (debug) {
+      val allStored = locationsDB.size()
+      val text = "DB items: $storedLocations - Synced: $count - All: $allStored"
+      notificationManager.show(context, text)
+    }
   }
 
   companion object {

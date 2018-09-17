@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public final class OpenLocateLocation implements JsonObjectType {
@@ -40,6 +41,7 @@ public final class OpenLocateLocation implements JsonObjectType {
         static final String HORIZONTAL_ACCURACY = "horizontal_accuracy";
         static final String TIMESTAMP = "utc_timestamp";
         static final String TIMESTAMP_RECEIVED = "utc_timestamp_received";
+        static final String TIMEZONE = "timezone";
         static final String AD_ID = "ad_id";
         static final String AD_OPT_OUT = "ad_opt_out";
         static final String AD_TYPE = "id_type";
@@ -66,6 +68,7 @@ public final class OpenLocateLocation implements JsonObjectType {
     private static final String ADVERTISING_ID_TYPE = "aaid";
 
     private Date created;
+    private String timezone;
     private LocationInfo location;
     private AdvertisingIdClient.Info advertisingInfo;
     private InformationFields informationFields;
@@ -82,14 +85,6 @@ public final class OpenLocateLocation implements JsonObjectType {
         this.location = location;
     }
 
-    public AdvertisingIdClient.Info getAdvertisingInfo() {
-        return advertisingInfo;
-    }
-
-    public void setAdvertisingInfo(AdvertisingIdClient.Info advertisingInfo) {
-        this.advertisingInfo = advertisingInfo;
-    }
-
     public static OpenLocateLocation from(Location location,
                                           AdvertisingIdClient.Info advertisingInfo, InformationFields informationFields) {
         return new OpenLocateLocation(location, advertisingInfo, informationFields);
@@ -102,6 +97,7 @@ public final class OpenLocateLocation implements JsonObjectType {
         this.advertisingInfo = advertisingInfo;
         this.informationFields = informationFields;
         this.created = new Date();
+        this.timezone = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT).replace("GMT", "").replace(":", "");
     }
 
     OpenLocateLocation(Date created, String jsonString) {
@@ -170,6 +166,8 @@ public final class OpenLocateLocation implements JsonObjectType {
                 locationMethod = json.getString(Keys.LOCATION_METHOD);
             }
 
+            timezone = json.has(Keys.TIMEZONE) ? json.getString(Keys.TIMEZONE) : "";
+
             informationFields = InformationFieldsFactory.getInformationFields(deviceManufacturer, deviceModel, chargingState, operatingSystem, carrierName, wifiSSID, wifiBSSID, connectionType, locationMethod);
 
             advertisingInfo = new AdvertisingIdClient.Info(
@@ -198,7 +196,8 @@ public final class OpenLocateLocation implements JsonObjectType {
                     .put(Keys.AD_ID, advertisingInfo.getId())
                     .put(Keys.AD_OPT_OUT, advertisingInfo.isLimitAdTrackingEnabled())
                     .put(Keys.AD_TYPE, ADVERTISING_ID_TYPE)
-                    .put(Keys.VERTICAL_ACCURACY, location.getVerticalAccuracy());
+                    .put(Keys.VERTICAL_ACCURACY, location.getVerticalAccuracy())
+                    .put(Keys.TIMEZONE, timezone);
 
             if (created != null) {
                 jsonObject.put(Keys.TIMESTAMP_RECEIVED, TimeUnit.MILLISECONDS.toSeconds(getCreated().getTime()));

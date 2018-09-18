@@ -64,20 +64,12 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:27.1.1'
-    implementation 'com.android.support:support-v4:27.1.1'
-
-    implementation('com.google.android.gms:play-services-location:11.0.4', {
-        exclude group: 'com.android.support', module: 'support-v4'
-    })
-    implementation('com.google.android.gms:play-services-ads:11.0.4', {
-        exclude group: 'com.android.support', module: 'support-v4'
-    })
-
+    implementation deps.support_v4
+    implementation deps.play_services_location
+    implementation deps.play_services_ads
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
 
     androidTestImplementation 'com.android.support:support-annotations:27.1.1'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.json:json:20170516'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

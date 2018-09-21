@@ -1,11 +1,14 @@
 package com.openlocate.android.core;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -17,6 +20,7 @@ import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
@@ -24,6 +28,8 @@ import org.json.JSONException;
 
 import java.util.List;
 
+import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
+import static com.firebase.jobdispatcher.RetryStrategy.DEFAULT_EXPONENTIAL;
 import static com.firebase.jobdispatcher.RetryStrategy.RETRY_POLICY_EXPONENTIAL;
 
 final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
@@ -36,8 +42,9 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
 
     private OpenLocate.Configuration configuration;
     private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
     private FirebaseJobDispatcher jobDispatcher;
+    private FusedLocationProviderClient fusedLocationProvider;
+    private boolean runDispatchService = true;
 
     public OpenLocateHelper(Context context, OpenLocate.Configuration configuration) {
         this.context = context;
@@ -49,10 +56,11 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
                 .build();
 
         jobDispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+        fusedLocationProvider = LocationServices.getFusedLocationProviderClient(context);
     }
 
     public void startTracking() {
-        if (mGoogleApiClient.isConnected() == false && mGoogleApiClient.isConnecting() == false) {
+        if (!mGoogleApiClient.isConnected() && !mGoogleApiClient.isConnecting()) {
             mGoogleApiClient.connect();
         }
     }
@@ -87,9 +95,10 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private void startLocationCollection() {
-        buildLocationRequest();
         requestLocationUpdates();
-        scheduleDispatchLocationService();
+        if (runDispatchService) {
+            scheduleDispatchLocationService();
+        }
     }
 
     private void stopLocationCollection() {
@@ -97,23 +106,10 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         unscheduleDispatchLocationService();
     }
 
-    private void buildLocationRequest() {
-        long locationUpdateInterval = configuration.getLocationUpdateInterval() * 1000;
-        long locationTransmissionInterval = configuration.getTransmissionInterval() * 1000;
-        int locationAccuracy = configuration.getLocationAccuracy().getLocationRequestAccuracy();
-
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(locationUpdateInterval);
-        mLocationRequest.setFastestInterval(locationUpdateInterval / 2);
-        mLocationRequest.setMaxWaitTime(Math.max(locationUpdateInterval * 2, (int)(locationTransmissionInterval * 0.85 / 3)));
-        mLocationRequest.setPriority(locationAccuracy);
-    }
-
     private void requestLocationUpdates() {
         try {
             Log.i(TAG, "Starting OL Updates");
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
-                    mLocationRequest, getLocationUpdatePendingIntent());
+            fusedLocationProvider.requestLocationUpdates(Config.getLocationRequest(), getLocationUpdatePendingIntent());
         } catch (SecurityException e) {
             Log.e(TAG, "Could not start OL Updates");
         }
@@ -121,7 +117,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
 
     private void removeLocationUpdates() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, getLocationUpdatePendingIntent());
+            fusedLocationProvider.removeLocationUpdates(getLocationUpdatePendingIntent());
         }
     }
 
@@ -145,20 +141,14 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
             stopTracking();
         }
 
-        long transmissionIntervalInSecs = configuration.getTransmissionInterval();
-
-        int initialBackoff = 600;
-        int maximumBackoff = Math.max((int)transmissionIntervalInSecs / 2, 3600);
-
         Job job = jobDispatcher.newJobBuilder()
                 .setService(DispatchLocationService.class)
                 .setTag(LOCATION_DISPATCH_TAG)
                 .setRecurring(true)
                 .setLifetime(Lifetime.FOREVER)
                 .setConstraints(Constraint.ON_ANY_NETWORK)
-                .setTrigger(Trigger.executionWindow((int)(transmissionIntervalInSecs * 0.9), (int)(transmissionIntervalInSecs * 1.1)))
-                .setReplaceCurrent(false)
-                .setRetryStrategy(jobDispatcher.newRetryStrategy(RETRY_POLICY_EXPONENTIAL, initialBackoff, maximumBackoff))
+                .setTrigger(Config.getTrigger())
+                .setRetryStrategy(DEFAULT_EXPONENTIAL)
                 .setExtras(bundle)
                 .build();
 
@@ -176,4 +166,27 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    private void runDispatchService(boolean runDispatchService) {
+        this.runDispatchService = runDispatchService;
+    }
+
+
+    public static void restartLocationUpdates(Context context) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        try {
+            final SharedPreferenceUtils prefs = SharedPreferenceUtils.getInstance(context);
+            final OpenLocate.Configuration configuration = new OpenLocate.Configuration.Builder(context,
+                    OpenLocate.Endpoint.fromJson(prefs.getStringValue(Constants.ENDPOINTS_KEY, null)))
+                    .build();
+
+            OpenLocateHelper olHelper = new OpenLocateHelper(context, configuration);
+            olHelper.runDispatchService(false);
+            olHelper.startTracking();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }

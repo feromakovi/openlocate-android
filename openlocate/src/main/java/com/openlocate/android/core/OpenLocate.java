@@ -220,9 +220,6 @@ public class OpenLocate {
         private String serverUrl;
         private HashMap<String, String> headers;
 
-        private long transmissionInterval;
-        private long locationUpdateInterval;
-        private LocationAccuracy locationAccuracy;
 
         private boolean isWifiCollectionDisabled;
         private boolean isDeviceModelCollectionDisabled;
@@ -352,9 +349,6 @@ public class OpenLocate {
         private Configuration(Builder builder) {
             this.context = builder.context;
             this.endpoints = builder.endpoints;
-            this.transmissionInterval = builder.transmissionInterval;
-            this.locationUpdateInterval = builder.locationUpdateInterval;
-            this.locationAccuracy = builder.locationAccuracy;
             this.isCarrierNameCollectionDisabled = builder.isCarrierNameCollectionDisabled;
             this.isChargingInfoCollectionDisabled = builder.isChargingInfoCollectionDisabled;
             this.isConnectionTypeCollectionDisabled = builder.isConnectionTypeCollectionDisabled;
@@ -368,18 +362,6 @@ public class OpenLocate {
 
         public List<Endpoint> getEndpoints() {
             return endpoints;
-        }
-
-        public long getTransmissionInterval() {
-            return transmissionInterval;
-        }
-
-        public long getLocationUpdateInterval() {
-            return locationUpdateInterval;
-        }
-
-        public LocationAccuracy getLocationAccuracy() {
-            return locationAccuracy;
         }
 
         public boolean isWifiCollectionDisabled() {
@@ -428,9 +410,6 @@ public class OpenLocate {
             dest.writeTypedList(this.endpoints);
             dest.writeString(this.serverUrl);
             dest.writeSerializable(this.headers);
-            dest.writeLong(this.transmissionInterval);
-            dest.writeLong(this.locationUpdateInterval);
-            dest.writeInt(this.locationAccuracy == null ? -1 : this.locationAccuracy.ordinal());
             dest.writeByte(this.isWifiCollectionDisabled ? (byte) 1 : (byte) 0);
             dest.writeByte(this.isDeviceModelCollectionDisabled ? (byte) 1 : (byte) 0);
             dest.writeByte(this.isDeviceManufacturerCollectionDisabled ? (byte) 1 : (byte) 0);
@@ -446,10 +425,6 @@ public class OpenLocate {
             this.endpoints = in.createTypedArrayList(Endpoint.CREATOR);
             this.serverUrl = in.readString();
             this.headers = (HashMap<String, String>) in.readSerializable();
-            this.transmissionInterval = in.readLong();
-            this.locationUpdateInterval = in.readLong();
-            int tmpLocationAccuracy = in.readInt();
-            this.locationAccuracy = tmpLocationAccuracy == -1 ? null : LocationAccuracy.values()[tmpLocationAccuracy];
             this.isWifiCollectionDisabled = in.readByte() != 0;
             this.isDeviceModelCollectionDisabled = in.readByte() != 0;
             this.isDeviceManufacturerCollectionDisabled = in.readByte() != 0;

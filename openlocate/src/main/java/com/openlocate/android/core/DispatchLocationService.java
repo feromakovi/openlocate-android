@@ -53,6 +53,8 @@ final public class DispatchLocationService extends SimpleJobService {
     @Override
     public int onRunJob(JobParameters job) {
         final InfoManager infoManager = new InfoManager(this);
+        OpenLocateHelper.restartLocationUpdates(this);
+
         List<OpenLocate.Endpoint> endpoints = null;
         try {
             endpoints = OpenLocate.Endpoint.fromJson(job.getExtras().getString(Constants.ENDPOINTS_KEY));

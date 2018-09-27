@@ -31,7 +31,6 @@ ext {
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
 
     testOptions {
         unitTests.returnDefaultValues = true

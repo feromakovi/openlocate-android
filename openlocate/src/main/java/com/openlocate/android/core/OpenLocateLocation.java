@@ -366,15 +366,6 @@ public final class OpenLocateLocation implements JsonObjectType {
     static long getFixTime(Location location) {
         final long bootTime = SystemClock.elapsedRealtimeNanos();
         final long diff = bootTime - location.getElapsedRealtimeNanos();
-        final long result = System.currentTimeMillis() - TimeUnit.NANOSECONDS.toMillis(diff);
-
-        Log.i(Location.class.getSimpleName(), "============ \n" +
-                "Time: " + location.getTime() +
-                "\n Location elapsedRealTime: " + TimeUnit.NANOSECONDS.toMillis(location.getElapsedRealtimeNanos()) +
-                "\n System bootElapsed: " + TimeUnit.NANOSECONDS.toMillis(bootTime) +
-                "\n Diff: " + TimeUnit.NANOSECONDS.toMillis(diff) +
-                "\n Current: " + System.currentTimeMillis() +
-                "\n Result: " + result);
-        return result;
+        return System.currentTimeMillis() - TimeUnit.NANOSECONDS.toMillis(diff);
     }
 }

@@ -186,7 +186,7 @@ final class OpenLocateHelper implements GoogleApiClient.ConnectionCallbacks,
             OpenLocateHelper olHelper = new OpenLocateHelper(context, configuration);
             olHelper.runDispatchService(false);
             olHelper.startTracking();
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -26,6 +26,7 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 final class Utils {
 
@@ -50,5 +51,17 @@ final class Utils {
         }
 
         return map;
+    }
+
+    public static String formatTimeZoneOffset() {
+        final int rawOffset = java.util.TimeZone.getDefault().getRawOffset();
+        if (rawOffset == 0) {
+            return "+0000";
+        }
+        long hours = TimeUnit.MILLISECONDS.toHours(rawOffset);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(rawOffset);
+        minutes = Math.abs(minutes - TimeUnit.HOURS.toMinutes(hours));
+
+        return String.format("%+03d%02d", hours, Math.abs(minutes));
     }
 }

@@ -99,7 +99,7 @@ public final class OpenLocateLocation implements JsonObjectType {
         this.advertisingInfo = advertisingInfo;
         this.informationFields = informationFields;
         this.created = new Date();
-        this.timezone = TimeZone.getDefault().getDisplayName(false, TimeZone.SHORT).replace("GMT", "").replace(":", "");
+        this.timezone = Utils.formatTimeZoneOffset();
     }
 
     OpenLocateLocation(Date created, String jsonString) {

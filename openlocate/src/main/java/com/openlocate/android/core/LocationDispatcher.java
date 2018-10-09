@@ -77,7 +77,7 @@ final class LocationDispatcher {
         if (headers.containsKey("User-Agent") == false) {
             headers.put("User-Agent", userAgent);
         }
-        headers.put("x-client", "App/1.0.25 ol-android/2.0.0");
+        headers.put("x-client", "App/1.0.26 ol-android/2.0.0");
         return headers;
     }
 
